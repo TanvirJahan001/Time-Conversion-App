@@ -1,70 +1,135 @@
-# Getting Started with Create React App
+# Time Conversion App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A React-based Time Conversion App that displays the current UTC time and date, along with the ability to view the time in various time zones like Bangladesh Time (BDT), Eastern Standard Time (EST), and more. The app is styled with Tailwind CSS for a modern, responsive design.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **Current UTC Time Display**: Shows the real-time UTC date and time.
+- **Timezone Conversion**: Convert UTC time to different time zones such as BDT, EST, PST, and more.
+- **Day and AM/PM Display**: Displays the day and time format (AM/PM) for each timezone.
+- **Timezone Offset**: Each timezone in the dropdown includes the offset from UTC.
 
-### `npm start`
+## Preview
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+![App Preview](screenshot.png)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Getting Started
 
-### `npm test`
+Follow these instructions to set up the project locally.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Prerequisites
 
-### `npm run build`
+- Node.js and npm installed
+- Git for version control
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Installation
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1. **Clone the repository:**
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+   ```bash
+   git clone https://github.com/TanvirJahan001/Time-Conversion-App.git
+   cd Time-Conversion-App
+   ```
 
-### `npm run eject`
+2. **Install dependencies:**
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+   ```bash
+   npm install
+   ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+3. **Run the application:**
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+   ```bash
+   npm start
+   ```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+4. **Open in Browser:**
 
-## Learn More
+   The app will run at `http://localhost:3000` by default.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Code Snippet
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Here’s the core code of the app:
 
-### Code Splitting
+```javascript
+import { formatInTimeZone } from "date-fns-tz";
+import React, { useEffect, useState } from "react";
+import "./index.css";
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+const TimeApp = () => {
+  const [utcTime, setUtcTime] = useState(new Date());
+  const [timezone, setTimezone] = useState("Asia/Dhaka");
 
-### Analyzing the Bundle Size
+  useEffect(() => {
+    const timer = setInterval(() => setUtcTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+  const formattedUTCTime = utcTime
+    .toISOString()
+    .substring(0, 19)
+    .replace("T", " ");
+  const formattedUTCDay = utcTime.toLocaleDateString("en-US", {
+    weekday: "long",
+    timeZone: "UTC",
+  });
+  const formattedLocalTime = formatInTimeZone(
+    utcTime,
+    timezone,
+    "yyyy-MM-dd hh:mm:ss a"
+  );
+  const formattedLocalDay = formatInTimeZone(utcTime, timezone, "EEEE");
 
-### Making a Progressive Web App
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+      <h1 className="text-4xl font-bold mb-6 drop-shadow-lg">
+        Time Conversion App
+      </h1>
+      <div className="card text-center p-4 mb-4 bg-white bg-opacity-20 rounded-md shadow-lg backdrop-blur-md">
+        <h2 className="text-2xl font-semibold mb-2">UTC Time</h2>
+        <p className="text-lg">{formattedUTCTime}</p>
+        <p className="text-md">{formattedUTCDay}</p>
+      </div>
+      <div className="card text-center p-4 mb-4 bg-white bg-opacity-20 rounded-md shadow-lg backdrop-blur-md">
+        <h2 className="text-2xl font-semibold mb-2">{timezone} Time</h2>
+        <p className="text-lg">{formattedLocalTime}</p>
+        <p className="text-md">{formattedLocalDay}</p>
+      </div>
+      <select
+        className="p-2 border rounded-md bg-white bg-opacity-20 backdrop-blur-md shadow-md text-gray-900 mt-4 transition-transform duration-500 ease-in-out"
+        value={timezone}
+        onChange={(e) => setTimezone(e.target.value)}
+      >
+        <option value="UTC">Coordinated Universal Time (UTC)</option>
+        <option value="Europe/London">
+          Greenwich Mean Time (GMT) {getUTCOffset("Europe/London")}
+        </option>
+        <option value="America/Los_Angeles">
+          Pacific Standard Time (PST) {getUTCOffset("America/Los_Angeles")}
+        </option>
+        <option value="America/New_York">
+          Eastern Standard Time (EST) {getUTCOffset("America/New_York")}
+        </option>
+        <option value="Asia/Shanghai">
+          China Standard Time (CST) {getUTCOffset("Asia/Shanghai")}
+        </option>
+        <option value="Asia/Dhaka">
+          Bangladesh Time (BDT) {getUTCOffset("Asia/Dhaka")}
+        </option>
+        <option value="Asia/Kolkata">
+          India Standard Time (IST) {getUTCOffset("Asia/Kolkata")}
+        </option>
+        <option value="Asia/Tokyo">
+          Japan Standard Time (JST) {getUTCOffset("Asia/Tokyo")}
+        </option>
+        <option value="Australia/Sydney">
+          Australian Eastern Daylight Time (AEDT){" "}
+          {getUTCOffset("Australia/Sydney")}
+        </option>
+      </select>
+    </div>
+  );
+};
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+export default TimeApp;
+```
